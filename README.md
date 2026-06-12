@@ -1,4 +1,4 @@
-# Grid AI Token Utilization — Distributed AI Coding Platform
+# Grid AI Token Utilization — Distributed AI based Coding Platform
 
   Grid Computing is an open-source distributed platform that intelligently routes AI coding tasks to idle developer
   machines across your organisation / dev teams . Instead of centralising expensive API keys on a single server, tasks are executed
