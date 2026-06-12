@@ -1,0 +1,51 @@
+# Grid Worker Configuration Example
+# Default location: ~/.grid-worker/config.yaml
+# All values can be overridden with env vars prefixed GW_
+# e.g. GW_SERVER_URL=https://grid.example.com
+
+server:
+  url: "https://grid.example.com"
+  api_key: ""          # Set via `grid-worker set-key <key>` or GW_SERVER_API_KEY env var
+  worker_id: ""        # Auto-populated after registration; do not set manually
+  heartbeat_sec: 30
+  poll_timeout_sec: 30
+  tls_skip_verify: false
+  retry_max: 3
+
+workspace:
+  base_path: ""        # Default: ~/.grid-worker/workspace
+  disk_quota_gb: 10.0
+  max_jobs: 2          # Max concurrent jobs (reduced if PF-10 warns low resources)
+  cleanup_after: true  # Delete workspace after task completion
+
+security:
+  hmac_secret: ""      # Must match control plane hmac_secret; set via env GW_SECURITY_HMAC_SECRET
+  scan_enabled: true
+  ruleset_path: ""     # Empty = use embedded default ruleset
+  scan_concurrency: 4  # Number of concurrent scanner workers
+
+execution:
+  timeout_sec: 3600    # 1 hour max per task
+  max_cpu_percent: 50  # Pause if CPU usage exceeds this during execution
+  max_ram_mb: 4096     # Pause if RAM usage exceeds this
+  agents:              # Permitted agent IDs (subset of what's installed)
+    - claude
+    - copilot
+
+policy:
+  mode: "auto"         # auto | manual | paused
+  # Execution windows (empty = always allowed in auto mode)
+  windows:
+    - day_of_week: [1, 2, 3, 4, 5]   # Mon-Fri
+      start_hour: 18                  # 6 PM
+      end_hour: 8                     # 8 AM next day
+      timezone: "America/New_York"
+    - day_of_week: [0, 6]             # Sat-Sun
+      start_hour: 0                   # All day
+      end_hour: 24
+      timezone: "America/New_York"
+
+logging:
+  level: "info"
+  format: "json"
+  file: ""             # Empty = stderr; set to a path to write to file

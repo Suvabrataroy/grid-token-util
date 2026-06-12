@@ -1,0 +1,40 @@
+version: "1"
+rules:
+  - id: "SEC-001"
+    name: "AWS Access Key ID"
+    pattern: '(?i)AKIA[0-9A-Z]{16}'
+    severity: critical
+    scope: all
+  - id: "SEC-002"
+    name: "GitHub Personal Access Token"
+    pattern: 'ghp_[0-9a-zA-Z]{36}'
+    severity: critical
+    scope: all
+  - id: "SEC-003"
+    name: "Private Key PEM"
+    pattern: '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----'
+    severity: critical
+    scope: all
+  - id: "SEC-004"
+    name: "Generic Password Assignment"
+    pattern: '(?i)password\s*[:=]\s*\S{8,}'
+    severity: high
+    scope: all
+  - id: "SEC-005"
+    name: "Generic Secret Assignment"
+    pattern: '(?i)secret\s*[:=]\s*\S{8,}'
+    severity: high
+    scope: all
+  - id: "SEC-006"
+    name: "Bearer Token"
+    pattern: '(?i)bearer\s+[a-zA-Z0-9._\-]{20,}'
+    severity: medium
+    scope: diff_only
+exclusions:
+  paths:
+    - "**/*.md"
+    - "**/testdata/**"
+    - "**/*_test.go"
+  patterns:
+    - "EXAMPLE_KEY_PLACEHOLDER"
+    - "YOUR_KEY_HERE"
