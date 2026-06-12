@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    @apply bg-grid-bg text-white;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-grid-bg;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-grid-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-grid-muted;
+  }
+}

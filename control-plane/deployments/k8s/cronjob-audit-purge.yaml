@@ -1,0 +1,92 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: audit-log-purge
+  namespace: grid-computing
+  labels:
+    app:       audit-log-purge
+    component: maintenance
+spec:
+  # Run daily at 02:30 UTC
+  schedule: "30 2 * * *"
+  timeZone: "UTC"
+  concurrencyPolicy:          Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit:     3
+  startingDeadlineSeconds:    300
+
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300   # kill job if it runs longer than 5 minutes
+
+      template:
+        metadata:
+          labels:
+            app:       audit-log-purge
+            component: maintenance
+        spec:
+          restartPolicy: OnFailure
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser:    65534
+
+          containers:
+            - name: purge
+              # Use the official postgres client image to run the SQL statement.
+              # The control-plane server image can be substituted if it ships psql.
+              image: postgres:16-alpine
+              imagePullPolicy: IfNotPresent
+
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  echo "[audit-purge] Deleting audit_log entries older than 90 days..."
+                  psql "$GRID_DATABASE_DSN" -v ON_ERROR_STOP=1 <<'SQL'
+                    DELETE FROM audit_log
+                    WHERE ts < NOW() - INTERVAL '90 days';
+
+                    -- Drop detached partitions (partitioned table variant)
+                    -- Uncomment if audit_log uses declarative partitioning by month:
+                    -- DO $$
+                    -- DECLARE
+                    --   partition_name TEXT;
+                    -- BEGIN
+                    --   FOR partition_name IN
+                    --     SELECT c.relname
+                    --     FROM pg_inherits i
+                    --     JOIN pg_class c ON c.oid = i.inhrelid
+                    --     JOIN pg_class p ON p.oid = i.inhparent
+                    --     WHERE p.relname = 'audit_log'
+                    --       AND c.relname < 'audit_log_' || TO_CHAR(NOW() - INTERVAL '90 days', 'YYYY_MM')
+                    --   LOOP
+                    --     EXECUTE format('DROP TABLE IF EXISTS %I', partition_name);
+                    --     RAISE NOTICE 'Dropped partition: %', partition_name;
+                    --   END LOOP;
+                    -- END $$;
+                  SQL
+                  echo "[audit-purge] Done."
+
+              env:
+                - name: GRID_DATABASE_DSN
+                  valueFrom:
+                    secretKeyRef:
+                      name: control-plane-secrets
+                      key:  GRID_DATABASE_DSN
+
+              resources:
+                requests:
+                  cpu:    "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu:    "200m"
+                  memory: "128Mi"
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem:   true
+                capabilities:
+                  drop: ["ALL"]

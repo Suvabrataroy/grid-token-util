@@ -1,0 +1,50 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: control-plane
+  namespace: grid-computing
+  labels:
+    app: control-plane
+  annotations:
+    # Nginx ingress controller annotations
+    kubernetes.io/ingress.class:                 "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect:    "true"
+    nginx.ingress.kubernetes.io/use-regex:       "true"
+
+    # Disable proxy buffering for SSE endpoints
+    nginx.ingress.kubernetes.io/proxy-buffering:       "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout:    "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout:    "3600"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+
+    # Rate limiting (adjust as needed)
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+
+    # TLS – cert-manager will provision the certificate
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - grid.example.com
+      secretName: control-plane-tls
+  rules:
+    - host: grid.example.com
+      http:
+        paths:
+          # API routes (including SSE stream)
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: control-plane
+                port:
+                  name: http
+          # Dashboard SPA (served by dashboard nginx container or Go static)
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: control-plane
+                port:
+                  name: http

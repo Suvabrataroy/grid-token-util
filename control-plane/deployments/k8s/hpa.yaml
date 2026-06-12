@@ -1,0 +1,46 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: control-plane
+  namespace: grid-computing
+  labels:
+    app: control-plane
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: control-plane
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    # Scale on CPU utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type:               AverageUtilization
+          averageUtilization: 70
+    # Scale on memory utilization (optional; uncomment to enable)
+    # - type: Resource
+    #   resource:
+    #     name: memory
+    #     target:
+    #       type:               AverageUtilization
+    #       averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300   # 5 min cooldown before scaling down
+      policies:
+        - type:          Pods
+          value:         1
+          periodSeconds: 120
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type:          Pods
+          value:         2
+          periodSeconds: 60
+        - type:          Percent
+          value:         50
+          periodSeconds: 60
+      selectPolicy: Max

@@ -1,0 +1,53 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+  scrape_timeout:      10s
+
+  external_labels:
+    cluster: 'grid-computing'
+    env:     'local'
+
+# Alertmanager configuration (uncomment when deploying alertmanager)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['alertmanager:9093']
+
+# Alert rule files (add your rules here)
+rule_files: []
+#   - "alert_rules.yml"
+
+scrape_configs:
+  # -----------------------------------------------------------------------
+  # Grid control-plane server
+  # Endpoint: GET /metrics  (Prometheus exposition format)
+  # -----------------------------------------------------------------------
+  - job_name: 'grid-server'
+    static_configs:
+      - targets: ['server:8080']
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 15s
+
+  # -----------------------------------------------------------------------
+  # Prometheus self-monitoring
+  # -----------------------------------------------------------------------
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # -----------------------------------------------------------------------
+  # PostgreSQL exporter  (add postgres-exporter service to docker-compose)
+  # Image: prometheuscommunity/postgres-exporter
+  # -----------------------------------------------------------------------
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # -----------------------------------------------------------------------
+  # Redis exporter  (add redis-exporter service to docker-compose)
+  # Image: oliver006/redis_exporter
+  # -----------------------------------------------------------------------
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
