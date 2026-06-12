@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------------------
+# Stage 1 – Build React / Vite app
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Cache npm install layer
+COPY dashboard-ui/package.json dashboard-ui/package-lock.json* ./
+RUN npm ci --prefer-offline
+
+# Copy source and build
+COPY dashboard-ui .
+RUN npm run build
+# Vite outputs to ../static/dashboard relative to dashboard-ui
+# but here we are working inside /app (=dashboard-ui), so dist/ is local
+# If vite.config.ts sets outDir: '../static/dashboard', the built assets
+# land at /static/dashboard relative to the workspace root.
+# We copy from there in stage 2.
+
+# ---------------------------------------------------------------------------
+# Stage 2 – Nginx static file server
+# ---------------------------------------------------------------------------
+FROM nginx:1.25-alpine
+
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy built assets – path depends on vite outDir setting
+# vite.config.ts: outDir: '../static/dashboard'  → /app/../static/dashboard = /static/dashboard
+COPY --from=builder /static/dashboard /usr/share/nginx/html
+
+# Custom nginx config
+COPY deployments/nginx.conf /etc/nginx/conf.d/default.conf
+
+# Nginx runs as non-root (nginx user already exists in the official image)
+# Adjust permissions so nginx user can read the files
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chmod -R 755 /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

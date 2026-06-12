@@ -1,0 +1,46 @@
+# Control Plane Configuration Example
+# Copy to config.yaml and fill in values
+# All values can be overridden with env vars prefixed GRID_
+# e.g. GRID_SERVER_PORT=9090
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+  tls_cert_file: ""        # Leave empty to disable TLS (use a reverse proxy in prod)
+  tls_key_file: ""
+  read_timeout_sec: 30
+  write_timeout_sec: 60
+
+database:
+  dsn: "postgres://grid:gridpass@localhost:5432/griddb?sslmode=disable"
+  max_open_conns: 25
+  max_idle_conns: 5
+  conn_timeout_sec: 10
+
+redis:
+  addr: "localhost:6379"
+  password: ""
+  db: 0
+
+security:
+  # Argon2id parameters for API key hashing
+  argon_memory: 65536        # 64 MB
+  argon_iterations: 3
+  argon_parallelism: 2
+  argon_salt_len: 16
+  argon_key_len: 32
+  # HMAC secret for output package signing (min 32 bytes)
+  hmac_secret: "CHANGE_ME_IN_PRODUCTION_MINIMUM_32_BYTES"
+
+scheduler:
+  tick_interval_sec: 5
+  reaper_interval_sec: 30
+  heartbeat_ttl_sec: 90
+
+dashboard:
+  snapshot_cache_ttl_sec: 30
+  max_sse_clients: 1000
+
+logging:
+  level: "info"     # debug | info | warn | error
+  format: "json"    # json | text

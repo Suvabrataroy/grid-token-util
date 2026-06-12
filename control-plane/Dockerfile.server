@@ -1,0 +1,45 @@
+# ---------------------------------------------------------------------------
+# Stage 1 – Build
+# ---------------------------------------------------------------------------
+FROM golang:1.22-alpine AS builder
+
+# Install build dependencies
+RUN apk --no-cache add ca-certificates git tzdata
+
+WORKDIR /build
+
+# Cache dependency downloads separately from source
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source and build a statically-linked binary
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -ldflags "-s -w -X main.buildSHA=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)" \
+    -o server \
+    ./cmd/server
+
+# ---------------------------------------------------------------------------
+# Stage 2 – Runtime
+# ---------------------------------------------------------------------------
+FROM alpine:3.19
+
+# Certificates and timezone data for outbound TLS and time handling
+RUN apk --no-cache add ca-certificates tzdata
+
+# Non-root user
+RUN addgroup -S grid && adduser -S -G grid grid
+
+WORKDIR /app
+
+COPY --from=builder /build/server      ./server
+COPY --from=builder /build/migrations  ./migrations
+
+# Ensure binary is owned by non-root user
+RUN chown -R grid:grid /app
+
+USER grid
+
+EXPOSE 8080
+
+ENTRYPOINT ["./server"]
