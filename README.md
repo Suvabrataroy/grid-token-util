@@ -8,13 +8,13 @@
   Built with Go for the control plane and cross-platform worker daemon, and React 18 / TypeScript for the real-time
   dashboard, the platform offers enterprise-grade features including:
 
-  - #Smart task scheduling with Redis-backed queuing and PostgreSQL persistence
-  - #Multi-agent support — route each task to the right AI tool
-  - #Brownie Points leaderboard to gamify contributor participation
-  - #Security-first design — Argon2id API key hashing, HMAC output integrity, pre/post secret scanning, and immutable
+  - Smart task scheduling with Redis-backed queuing and PostgreSQL persistence
+  - Multi-agent support — route each task to the right AI tool
+  - Brownie Points leaderboard to gamify contributor participation
+  - Security-first design — Argon2id API key hashing, HMAC output integrity, pre/post secret scanning, and immutable
   audit logs
-  - #Cross-platform workers — runs as a system service on Linux (systemd), macOS (launchd), and Windows
-  - #Production-ready deployment — Docker Compose, Kubernetes, Prometheus metrics, and Grafana dashboards included
+  - Cross-platform workers — runs as a system service on Linux (systemd), macOS (launchd), and Windows
+  - Production-ready deployment — Docker Compose, Kubernetes, Prometheus metrics, and Grafana dashboards included
 
   Ideal for engineering teams looking to harness spare compute capacity while keeping AI workflows private, auditable,
   and cost-efficient.
