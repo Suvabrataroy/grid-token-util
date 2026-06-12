@@ -1,6 +1,23 @@
-# Grid Computing — Distributed AI Coding Platform
+# Grid AI Token Utilization — Distributed AI Coding Platform
 
-A distributed platform that routes AI coding tasks to idle developer machines across an organisation, executing them via pluggable AI agent adapters (Claude, GitHub Copilot, Gemini, ChatGPT, or custom) without centralising API keys.
+  Grid Computing is an open-source distributed platform that intelligently routes AI coding tasks to idle developer
+  machines across your organisation. Instead of centralising expensive API keys on a single server, tasks are executed
+  locally on worker nodes using pluggable AI agent adapters — supporting Claude, GitHub Copilot, Google Gemini,
+  ChatGPT, and custom agents.
+
+  Built with Go for the control plane and cross-platform worker daemon, and React 18 / TypeScript for the real-time
+  dashboard, the platform offers enterprise-grade features including:
+
+  - Smart task scheduling with Redis-backed queuing and PostgreSQL persistence
+  - Multi-agent support — route each task to the right AI tool
+  - Brownie Points leaderboard to gamify contributor participation
+  - Security-first design — Argon2id API key hashing, HMAC output integrity, pre/post secret scanning, and immutable
+  audit logs
+  - Cross-platform workers — runs as a system service on Linux (systemd), macOS (launchd), and Windows
+  - Production-ready deployment — Docker Compose, Kubernetes, Prometheus metrics, and Grafana dashboards included
+
+  Ideal for engineering teams looking to harness spare compute capacity while keeping AI workflows private, auditable,
+  and cost-efficient.
 
 ## Architecture Overview
 
